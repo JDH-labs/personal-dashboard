@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0b0d10" />
+    <meta
+      name="description"
+      content="Личная панель: часы, задачи и заметки."
+    />
+    <title>Личная панель</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <div>
+          <p class="eyebrow" id="greeting">Добрый вечер</p>
+          <h1>Vlad</h1>
+        </div>
+        <p class="date" id="date"></p>
+      </header>
+
+      <section class="clock-card" aria-label="Цифровые часы">
+        <div class="clock" id="clock">
+          <span id="hours">00</span><span class="colon" aria-hidden="true">:</span
+          ><span id="minutes">00</span>
+          <span class="seconds" id="seconds">00</span>
+        </div>
+        <p class="clock-caption">местное время</p>
+      </section>
+
+      <main class="workspace">
+        <section class="card" aria-labelledby="tasks-title">
+          <div class="card-head">
+            <div>
+              <h2 id="tasks-title">Задачи</h2>
+              <p class="meta" id="task-summary">Пока пусто</p>
+            </div>
+            <div
+              class="progress"
+              id="progress"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-label="Прогресс задач"
+            >
+              <span id="progress-bar"></span>
+            </div>
+          </div>
+
+          <form class="task-form" id="task-form">
+            <label class="sr-only" for="task-input">Новая задача</label>
+            <input
+              id="task-input"
+              type="text"
+              maxlength="140"
+              placeholder="Что нужно сделать?"
+              autocomplete="off"
+              required
+            />
+            <button type="submit">Добавить</button>
+          </form>
+
+          <div class="filters" role="tablist" aria-label="Фильтр задач">
+            <button type="button" class="chip is-active" data-filter="all" aria-pressed="true">
+              Все
+            </button>
+            <button type="button" class="chip" data-filter="active" aria-pressed="false">
+              Активные
+            </button>
+            <button type="button" class="chip" data-filter="done" aria-pressed="false">
+              Готовые
+            </button>
+          </div>
+
+          <ul class="task-list" id="task-list"></ul>
+          <p class="empty" id="task-empty" hidden>Список пуст. Добавьте первую задачу.</p>
+        </section>
+
+        <section class="card notes-card" aria-labelledby="notes-title">
+          <div class="card-head">
+            <div>
+              <h2 id="notes-title">Заметки</h2>
+              <p class="meta" id="notes-status">Сохраняются в этом браузере</p>
+            </div>
+          </div>
+          <label class="sr-only" for="notes">Текст заметок</label>
+          <textarea
+            id="notes"
+            placeholder="Мысли, идеи, что важно не забыть…"
+            spellcheck="true"
+          ></textarea>
+        </section>
+      </main>
+    </div>
+    <script src="script.js" defer></script>
+  </body>
+</html>
