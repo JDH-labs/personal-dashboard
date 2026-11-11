@@ -1,107 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#0b0d10" />
-    <meta
-      name="description"
-      content="Личная панель: часы, задачи и заметки."
-    />
-    <title>Личная панель</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101317">
+    <meta name="description" content="Atmos — минималистичная погодная сводка с прогнозом на сутки и неделю.">
+    <title>Atmos — погода без лишнего</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
   </head>
   <body>
-    <div class="app">
-      <header class="top">
-        <div>
-          <p class="eyebrow" id="greeting">Добрый вечер</p>
-          <h1>Vlad</h1>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Atmos — на главную">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M5 22.5 13.5 7l4.1 7.4L21 8l6 14.5H5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+              <path d="M10 22.5 15 13l5.1 9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="brand-name">atmos<span>.</span></span>
+        </a>
+
+        <div class="header-tools">
+          <form class="search" id="search-form" role="search">
+            <label class="search-trigger" for="city-search" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/>
+                <path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+            </label>
+            <label class="sr-only" for="city-search">Поиск города</label>
+            <input id="city-search" type="search" placeholder="Найти город" autocomplete="off" aria-controls="city-suggestions" aria-expanded="false">
+            <button type="submit" class="sr-only">Найти</button>
+            <div class="city-suggestions" id="city-suggestions" role="listbox" aria-label="Найденные города" hidden></div>
+          </form>
+          <div class="unit-toggle" role="group" aria-label="Единицы температуры">
+            <button type="button" class="unit-button is-active" data-unit="c" aria-pressed="true">°C</button>
+            <span aria-hidden="true"></span>
+            <button type="button" class="unit-button" data-unit="f" aria-pressed="false">°F</button>
+          </div>
+          <button type="button" class="icon-button refresh-button" id="refresh-button" aria-label="Обновить погоду" title="Обновить погоду">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </div>
-        <p class="date" id="date"></p>
       </header>
 
-      <section class="clock-card" aria-label="Цифровые часы">
-        <div class="clock" id="clock">
-          <span id="hours">00</span><span class="colon" aria-hidden="true">:</span
-          ><span id="minutes">00</span>
-          <span class="seconds" id="seconds">00</span>
+      <main>
+        <div class="demo-banner" id="weather-source">
+          <span class="demo-indicator" aria-hidden="true"></span>
+          Актуальная погода <span class="banner-divider">/</span> данные Open-Meteo
         </div>
-        <p class="clock-caption">местное время</p>
-      </section>
+        <p class="search-feedback" id="search-feedback" role="alert" hidden></p>
 
-      <main class="workspace">
-        <section class="card" aria-labelledby="tasks-title">
-          <div class="card-head">
-            <div>
-              <h2 id="tasks-title">Задачи</h2>
-              <p class="meta" id="task-summary">Пока пусто</p>
+        <section class="overview" aria-labelledby="city-name">
+          <div class="overview-copy">
+            <div class="location-line">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M19 10.1c0 5-7 11-7 11s-7-6-7-11a7 7 0 1 1 14 0Z" stroke="currentColor" stroke-width="1.6"/>
+                <circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+              <h1 id="city-name">Москва</h1>
+              <span class="location-country">Россия</span>
+              <button type="button" class="favorite-toggle" id="favorite-toggle" aria-label="Добавить город в избранное" aria-pressed="false" title="Добавить в избранное">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.8 2.55 5.17 5.7.83-4.12 4.02.97 5.68L12 16.82l-5.1 2.68.97-5.68-4.12-4.02 5.7-.83L12 3.8Z"/></svg>
+              </button>
             </div>
-            <div
-              class="progress"
-              id="progress"
-              role="progressbar"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              aria-valuenow="0"
-              aria-label="Прогресс задач"
-            >
-              <span id="progress-bar"></span>
+            <p class="date-line" id="date-line"></p>
+            <div class="current-weather">
+              <div class="temperature-wrap">
+                <span class="temperature" id="current-temperature">—</span>
+                <span class="temperature-unit" id="current-unit">°</span>
+              </div>
+              <div class="condition-wrap">
+                <div class="weather-icon current-icon" id="current-icon" aria-hidden="true"></div>
+                <div>
+                  <p class="condition" id="current-condition">Загрузка сводки</p>
+                  <p class="feels-like">Ощущается как <span id="feels-like">—</span></p>
+                </div>
+              </div>
             </div>
+            <p class="update-status" id="update-status" role="status" aria-live="polite">
+              <span class="status-dot" aria-hidden="true"></span> Загружаем прогноз…
+            </p>
           </div>
 
-          <form class="task-form" id="task-form">
-            <label class="sr-only" for="task-input">Новая задача</label>
-            <input
-              id="task-input"
-              type="text"
-              maxlength="140"
-              placeholder="Что нужно сделать?"
-              autocomplete="off"
-              required
-            />
-            <button type="submit">Добавить</button>
-          </form>
-
-          <div class="filters" role="tablist" aria-label="Фильтр задач">
-            <button type="button" class="chip is-active" data-filter="all" aria-pressed="true">
-              Все
-            </button>
-            <button type="button" class="chip" data-filter="active" aria-pressed="false">
-              Активные
-            </button>
-            <button type="button" class="chip" data-filter="done" aria-pressed="false">
-              Готовые
-            </button>
+          <div class="metrics-grid" aria-label="Погодные показатели">
+            <article class="metric-card">
+              <div class="metric-top">
+                <span class="metric-icon humidity-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5S5.7 10.3 5.7 14.5a6.3 6.3 0 0 0 12.6 0C18.3 10.3 12 3.5 12 3.5Z" stroke="currentColor" stroke-width="1.6"/><path d="M9.3 15.1a2.8 2.8 0 0 0 2.8 2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+                <span class="metric-label">Влажность</span>
+              </div>
+              <p class="metric-value"><span id="humidity">—</span><small>%</small></p>
+              <p class="metric-note">комфортный уровень</p>
+            </article>
+            <article class="metric-card">
+              <div class="metric-top">
+                <span class="metric-icon wind-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M3 8h12.5a2.5 2.5 0 1 0-2.4-3.2M3 12h16a2 2 0 1 1-1.9 2.7M3 16h9a2 2 0 1 1-1.9 2.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+                <span class="metric-label">Ветер</span>
+              </div>
+              <p class="metric-value"><span id="wind">—</span><small> м/с</small></p>
+              <p class="metric-note" id="wind-direction">северо-западный</p>
+            </article>
+            <article class="metric-card">
+              <div class="metric-top">
+                <span class="metric-icon pressure-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 17a8 8 0 1 1 15 0M12 13l4-4M7.5 17h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="metric-label">Давление</span>
+              </div>
+              <p class="metric-value"><span id="pressure">—</span><small> мм рт. ст.</small></p>
+              <p class="metric-note">в пределах нормы</p>
+            </article>
+            <article class="metric-card">
+              <div class="metric-top">
+                <span class="metric-icon visibility-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M2.8 12s3.2-6 9.2-6 9.2 6 9.2 6-3.2 6-9.2 6-9.2-6-9.2-6Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+                </span>
+                <span class="metric-label">Видимость</span>
+              </div>
+              <p class="metric-value"><span id="visibility">—</span><small> км</small></p>
+              <p class="metric-note">отличная</p>
+            </article>
           </div>
-
-          <ul class="task-list" id="task-list"></ul>
-          <p class="empty" id="task-empty" hidden>Список пуст. Добавьте первую задачу.</p>
         </section>
 
-        <section class="card notes-card" aria-labelledby="notes-title">
-          <div class="card-head">
-            <div>
-              <h2 id="notes-title">Заметки</h2>
-              <p class="meta" id="notes-status">Сохраняются в этом браузере</p>
-            </div>
+        <section class="favorites-section" aria-labelledby="favorites-title">
+          <div class="favorites-heading">
+            <h2 id="favorites-title">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.8 2.55 5.17 5.7.83-4.12 4.02.97 5.68L12 16.82l-5.1 2.68.97-5.68-4.12-4.02 5.7-.83L12 3.8Z"/></svg>
+              Избранные города
+            </h2>
+            <span class="favorites-hint">Быстрый доступ</span>
           </div>
-          <label class="sr-only" for="notes">Текст заметок</label>
-          <textarea
-            id="notes"
-            placeholder="Мысли, идеи, что важно не забыть…"
-            spellcheck="true"
-          ></textarea>
+          <div class="favorite-list" id="favorite-list" aria-live="polite"></div>
+          <p class="favorites-empty" id="favorites-empty">Добавьте город нажатием на звёздочку рядом с его названием.</p>
+        </section>
+
+        <div class="forecast-tabs" role="tablist" aria-label="Период прогноза">
+          <button class="forecast-tab is-active" id="hourly-tab" type="button" role="tab" aria-selected="true" aria-controls="hourly-panel">24 часа</button>
+          <button class="forecast-tab" id="weekly-tab" type="button" role="tab" aria-selected="false" aria-controls="weekly-panel" tabindex="-1">7 дней</button>
+        </div>
+        <section class="forecast-section hourly-section" id="hourly-panel" role="tabpanel" aria-labelledby="hourly-tab">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">БЛИЖАЙШЕЕ ВРЕМЯ</p>
+              <h2 id="hourly-title">Следующие 24 часа</h2>
+            </div>
+            <span class="section-aside">Почасовой прогноз</span>
+          </div>
+          <div class="hourly-track" id="hourly-track" aria-label="Почасовой прогноз на ближайшие 24 часа"></div>
+        </section>
+
+        <section class="forecast-section weekly-section" id="weekly-panel" role="tabpanel" aria-labelledby="weekly-tab" hidden>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">ПЛАНИРУЙТЕ НЕДЕЛЮ</p>
+              <h2 id="weekly-title">Прогноз на 7 дней</h2>
+            </div>
+            <span class="section-aside">Температура и условия</span>
+          </div>
+          <div class="weekly-layout">
+            <div class="week-list" id="week-list" aria-label="Прогноз погоды на семь дней"></div>
+            <aside class="chart-card" aria-labelledby="chart-title">
+              <div class="chart-heading">
+                <div>
+                  <p class="eyebrow">ТЕМПЕРАТУРНЫЙ ТРЕНД</p>
+                  <h3 id="chart-title">На этой неделе</h3>
+                </div>
+                <span class="chart-key"><i aria-hidden="true"></i> днём</span>
+              </div>
+              <div class="chart-wrap" id="chart-wrap"></div>
+              <p class="chart-caption">Максимальная температура по дням</p>
+            </aside>
+          </div>
         </section>
       </main>
+      <footer class="footer">
+        <span>Atmos<span class="footer-mark">.</span></span>
+        <span>Погода — это настроение места.</span>
+        <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Погода от Open-Meteo</a>
+      </footer>
     </div>
-    <script src="script.js" defer></script>
   </body>
 </html>
